@@ -1,0 +1,27 @@
+from fastapi import APIRouter
+from app.api.v1.endpoints import users, projects, tasks
+
+# Router principal que agrupa todos los routers
+api_router = APIRouter()
+
+# Registramos el router de usuarios
+# prefix  → todas las rutas de users tendrán /users al inicio
+# tags    → agrupa los endpoints en Swagger UI
+api_router.include_router(
+    users.router,
+    prefix="/users",
+    tags=["Users"]
+)
+
+api_router.include_router(
+    projects.router,
+    prefix= "/projects",
+    tags=["Projects"]
+    
+)
+
+api_router.include_router(
+    tasks.router,
+    prefix="/tasks",
+    tags=["Tasks"]
+)

@@ -1,0 +1,8 @@
+# Variables de entorno — NUNCA a GitHub
+.env
+
+# Entorno virtual
+venv/
+env/
+__pycache__/
+*.pyc
