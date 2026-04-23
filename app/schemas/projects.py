@@ -1,6 +1,34 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
+from typing import Optional
+import enum
+from datetime import datetime
+
+class Status(str, enum.Enum):
+    PENDING = "pending"
+    IN_PROGRESS = "in_progress"
+    COMPLETED = "completed"
+
 
 class ProjectCreate(BaseModel):
-    nombre: str
-    descripcion: str = Field(min_length=10, max_length=500)
-    creado_by: int
+    name: str
+    description: str = Field(min_length=10, max_length=500)
+    created_by: int
+    
+class ProjectResponse(BaseModel):
+
+    model_config = ConfigDict(from_attributes=True)
+    
+    id: int
+    name: str
+    description: str
+    status: Status
+    manager_id: int
+    created_at: datetime
+    created_by: int
+    
+class ProjectUpdate(BaseModel):
+    
+    name: Optional[str] = None
+    description: Optional[str] = None
+    status: Optional[Status] = None
+    

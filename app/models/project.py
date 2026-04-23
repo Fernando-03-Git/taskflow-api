@@ -15,7 +15,7 @@ class Project(Base):
     __tablename__= "projects"
     
     id: Mapped[int] = mapped_column(primary_key=True)
-    name:Mapped[str] = mapped_column(String(30))
+    name: Mapped[str] = mapped_column(String(30))
     description: Mapped[str] = mapped_column(String(500))
     status: Mapped[Status] = mapped_column(Enum(Status))
     manager_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
