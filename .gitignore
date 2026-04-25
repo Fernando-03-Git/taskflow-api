@@ -1,8 +1,27 @@
 # Variables de entorno — NUNCA a GitHub
 .env
+.env.*
 
 # Entorno virtual
 venv/
 env/
+
+# Archivos temporales de Python
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+
+# Base de datos local
+*.db
+*.sqlite3
+
+# VS Code
+.vscode/
+
+# Alembic — no subir cache
+alembic/versions/__pycache__/
+
+# Sistema operativo
+.DS_Store
+Thumbs.db

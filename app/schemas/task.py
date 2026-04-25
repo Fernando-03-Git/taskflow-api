@@ -4,16 +4,17 @@ from datetime import datetime
 from typing import Optional
 
 class TaskStatus(str, Enum):
-    pending = "pending"
-    in_progress = "in_progress"
-    review      = "review"
-    done        = "done"
+    PENDING     = "PENDING"
+    IN_PROGRESS = "IN_PROGRESS"
+    COMPLETED   = "COMPLETED"
 
 class TaskCreate(BaseModel):
     title: str = Field(min_length=3, max_length=100)
     description: str
     status: TaskStatus
     assigned_to: int
+    project_id: int
+    created_by: int
     
 class TaskResponse(BaseModel):
     

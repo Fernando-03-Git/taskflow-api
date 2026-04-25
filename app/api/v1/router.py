@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.v1.endpoints import users, projects, tasks
+from app.api.v1.endpoints import users, projects, tasks, comment
 
 # Router principal que agrupa todos los routers
 api_router = APIRouter()
@@ -24,4 +24,10 @@ api_router.include_router(
     tasks.router,
     prefix="/tasks",
     tags=["Tasks"]
+)
+
+api_router.include_router(
+    comment.router,
+    prefix="/comment",
+    tags=["Comment"]
 )

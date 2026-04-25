@@ -7,9 +7,9 @@ from datetime import datetime
 from sqlalchemy import String, func, DateTime
 
 class Status(enum.Enum):
-    PENDING = "pending"
-    IN_PROGRESS = "in_progress"
-    COMPLETED = "completed"
+    PENDING     = "PENDING"
+    IN_PROGRESS = "IN_PROGRESS"
+    COMPLETED   = "COMPLETED"
 
 class Project(Base):
     __tablename__= "projects"

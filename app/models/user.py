@@ -6,9 +6,9 @@ from datetime import datetime
 from sqlalchemy import String, DateTime, func
 
 class Rol(enum.Enum):
-    ADMIN = "admin"
-    MANAGER = "manager"
-    DEVELOPER = "developer"
+    ADMIN     = "ADMIN"
+    MANAGER   = "MANAGER"
+    DEVELOPER = "DEVELOPER"
 
 class User(Base):
     __tablename__= "users"

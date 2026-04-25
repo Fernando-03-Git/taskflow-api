@@ -1,8 +1,8 @@
-"""Tablas iniciales corregidas
+"""fix enum values uppercase all
 
-Revision ID: e4f3aa681905
+Revision ID: e3976be6c749
 Revises: 
-Create Date: 2026-04-22 20:36:46.902403
+Create Date: 2026-04-23 22:57:21.427214
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'e4f3aa681905'
+revision: str = 'e3976be6c749'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -48,7 +48,7 @@ def upgrade() -> None:
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('title', sa.String(length=30), nullable=False),
     sa.Column('description', sa.String(length=500), nullable=False),
-    sa.Column('status', sa.Enum('PENDING', 'IN_PROGRESS', 'REVIEW', 'DONE', name='status'), nullable=False),
+    sa.Column('status', sa.Enum('PENDING', 'IN_PROGRESS', 'COMPLETED', name='status'), nullable=False),
     sa.Column('project_id', sa.Integer(), nullable=False),
     sa.Column('assigned_to', sa.Integer(), nullable=False),
     sa.Column('created_by', sa.Integer(), nullable=False),

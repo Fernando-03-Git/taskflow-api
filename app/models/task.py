@@ -7,10 +7,9 @@ from datetime import datetime
 from sqlalchemy import String, func, DateTime
 
 class Status(enum.Enum):
-    PENDING = "pending"
-    IN_PROGRESS = "in_progress"
-    REVIEW = "review"
-    DONE = "done"
+    PENDING     = "PENDING"
+    IN_PROGRESS = "IN_PROGRESS"
+    COMPLETED   = "COMPLETED"
 
 class Task(Base):
     __tablename__= "tasks"

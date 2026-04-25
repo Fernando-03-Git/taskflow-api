@@ -1,41 +1,26 @@
-from fastapi import APIRouter
-from app.schemas.task import TaskCreate
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+from app.db.deps import get_db
+from app.schemas.task import TaskCreate,TaskResponse, TaskUpdate
+from app.services import task_service
 
 router = APIRouter()
 
-@router.get("/")
-def get_tasks():
-    return[
-        {
-            "id": 1,
-            "title": "hacer endpoints",
-            "status": "pendiente",
-            "assigned_to": "Fernando"
-        },
-        
-        {
-            "id": 2,
-            "tittle": "crear ladingpage",
-            "status": "pendiente",
-            "assined_to": "Marifer"
-        }
-    ]
+@router.get("/", response_model= list[TaskResponse])
+def get_tasks(db: Session = Depends(get_db)):
+    return task_service.get_tasks(db)
 
-@router.get("/{task_id}")
-def get_task(task_id: int):
-    return{
-        "id": task_id,
-        "title": "crear ladingpage",
-        "status": "pendiente",
-        "assigned_to": "Marifer"
-    }
+@router.get("/{task_id}", response_model= TaskResponse)
+def get_task(task_id: int, db: Session = Depends(get_db)):
+    return task_service.get_task(db, task_id)
 
-@router.post("/")
-def create_task(task: TaskCreate):
+@router.post("/", response_model= TaskResponse)
+def create_task(task: TaskCreate, db: Session = Depends(get_db)):
     # task ya llegó validado por Pydantic
     # si faltó algún campo o tiene tipo incorrecto
     # FastAPI lanzó 422 antes de llegar aquí
-    return{
-        "message": "Tarea creada exitosamente",
-        "task": task
-    }
+    return task_service.create_task(db, task)
+
+@router.patch("/{task_id}", response_model=TaskResponse)
+def update_task(task_id: int, data: TaskUpdate, db: Session = Depends(get_db)):
+    return task_service.update_task(db, task_id, data)

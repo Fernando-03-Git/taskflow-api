@@ -4,14 +4,15 @@ import enum
 from datetime import datetime
 
 class Status(str, enum.Enum):
-    PENDING = "pending"
-    IN_PROGRESS = "in_progress"
-    COMPLETED = "completed"
+    PENDING     = "PENDING"
+    IN_PROGRESS = "IN_PROGRESS"
+    COMPLETED   = "COMPLETED"
 
 
 class ProjectCreate(BaseModel):
     name: str
     description: str = Field(min_length=10, max_length=500)
+    manager_id: int
     created_by: int
     
 class ProjectResponse(BaseModel):
