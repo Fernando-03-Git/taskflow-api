@@ -1,21 +1,33 @@
+from fastapi import HTTPException
 from app.models.user import User
 from app.schemas.users import UserCreate, UserUpdate
 from sqlalchemy.orm import Session
 
 def get_user(db: Session, user_id: int) -> User:
-    return db.query(User).filter(User.id == user_id).first()
+    user = db.query(User).filter(User.id == user_id).first()
+    
+    if not user:
+        raise HTTPException(
+            status_code=404,
+            detail=f"User with id {user_id} not found"
+        )
+    
+    return user
 
 def get_users(db: Session) -> list[User]:
     return db.query(User).all()
 
 def create_user(db: Session, user: UserCreate) -> User:
-    db_user = User(
-        name = user.name,
-        last_name = user.last_name,
-        email = user.email,
-        password = user.password,
-        rol = user.rol
-    )
+    
+    existing_user = db.query(User).filter(User.email == user.email).first()
+    
+    if existing_user:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Email {user.email} is already registered"
+        )
+    
+    db_user = User(**user.model_dump())
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
@@ -23,6 +35,19 @@ def create_user(db: Session, user: UserCreate) -> User:
 
 def update_user(db: Session, user_id: int, data: UserUpdate) -> User:
     user = get_user(db, user_id)
+    
+    if data.email:
+        existing_email = db.query(User).filter(
+            User.email == data.email,
+            User.id != user_id
+            ).first()
+        
+        if existing_email:
+            raise HTTPException(
+                status_code=409,
+                detail=f"Email {data.email} is already registered"
+            )
+    
     for key, value in data.model_dump(exclude_unset= True).items():
         setattr(user, key, value)
     db.commit()
@@ -32,6 +57,13 @@ def update_user(db: Session, user_id: int, data: UserUpdate) -> User:
 
 def deactivate_user(db: Session, user_id: int) -> User:
     user = get_user(db, user_id)
+    
+    if user.is_active == False:
+        raise HTTPException(
+            status_code=409,
+            detail=f"User {user.name} is already deactivated"
+        )
+    
     user.is_active = False
     db.commit()
     return user

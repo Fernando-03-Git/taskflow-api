@@ -14,7 +14,7 @@ def get_tasks(db: Session = Depends(get_db)):
 def get_task(task_id: int, db: Session = Depends(get_db)):
     return task_service.get_task(db, task_id)
 
-@router.post("/", response_model= TaskResponse)
+@router.post("/", response_model= TaskResponse, status_code=201)
 def create_task(task: TaskCreate, db: Session = Depends(get_db)):
     # task ya llegó validado por Pydantic
     # si faltó algún campo o tiene tipo incorrecto

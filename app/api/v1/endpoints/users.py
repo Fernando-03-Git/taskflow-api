@@ -19,11 +19,11 @@ def get_user(user_id: int, db: Session = Depends(get_db)):
     # el tipo int valida que sea un número — si mandás letras, error 422
     return user_service.get_user(db, user_id)
 
-@router.post("/", response_model= UserResponse)
+@router.post("/", response_model= UserResponse, status_code=201)
 def create_user(user: UserCreate, db: Session = Depends(get_db)):
     return user_service.create_user(db, user)
 
-@router.delete("/{user_id}")
+@router.delete("/{user_id}", response_model= UserResponse)
 def deactivate_user(user_id: int, db: Session = Depends(get_db)):
     return user_service.deactivate_user(db, user_id)
 

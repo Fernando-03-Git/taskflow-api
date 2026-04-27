@@ -14,7 +14,7 @@ def get_projects(db: Session = Depends(get_db)):
 def get_project(project_id: int, db: Session = Depends(get_db)):
     return project_service.get_project(db, project_id)
 
-@router.post("/", response_model= ProjectResponse)
+@router.post("/", response_model= ProjectResponse, status_code=201)
 def create_project(project: ProjectCreate, db: Session = Depends(get_db)):
     return project_service.create_project(db, project)
 

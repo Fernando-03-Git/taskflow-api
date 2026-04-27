@@ -14,7 +14,7 @@ def get_comments(db: Session = Depends(get_db)):
 def get_comment(comment_id: int, db: Session = Depends(get_db)):
     return comment_service.get_comment(db, comment_id)
 
-@router.post("/", response_model= CommentResponse)
+@router.post("/", response_model= CommentResponse, status_code=201)
 def create_comment(comment: CommentCreate, db: Session = Depends(get_db)):
     return comment_service.create_comment(db, comment)
 
@@ -22,6 +22,6 @@ def create_comment(comment: CommentCreate, db: Session = Depends(get_db)):
 def update_comment(comment_id: int, data: CommentUpdate, db: Session = Depends(get_db)):
     return comment_service.update_comment(db, comment_id, data)
 
-@router.delete("/{comment_id}")
+@router.delete("/{comment_id}", status_code=204)
 def delete_comment(comment_id: int, db: Session = Depends(get_db)):
-    return comment_service.delete_comment(db, comment_id)
+    comment_service.delete_comment(db, comment_id)

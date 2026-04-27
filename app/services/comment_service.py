@@ -1,3 +1,4 @@
+from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from app.schemas.comment import CommentCreate, CommentUpdate
 from app.models.comment import Comment
@@ -6,14 +7,18 @@ def get_comments(db: Session) -> list[Comment]:
     return db.query(Comment).all()
 
 def get_comment(db:Session, comment_id: int) -> Comment:
-    return db.query(Comment).filter(Comment.id == comment_id).first()
+    comment = db.query(Comment).filter(Comment.id == comment_id).first()
+    
+    if not comment:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Comment with id {comment_id} not found"
+        )
+    
+    return comment
 
 def create_comment(db: Session, comment: CommentCreate) -> Comment:
-    db_comment = Comment(
-        content = comment.content,
-        task_id = comment.task_id,
-        user_id = comment.user_id
-    )
+    db_comment = Comment(**comment.model_dump())
     db.add(db_comment)
     db.commit()
     db.refresh(db_comment)
