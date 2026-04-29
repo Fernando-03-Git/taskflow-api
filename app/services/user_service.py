@@ -2,6 +2,7 @@ from fastapi import HTTPException
 from app.models.user import User
 from app.schemas.users import UserCreate, UserUpdate
 from sqlalchemy.orm import Session
+from app.core.security import hash_password
 
 def get_user(db: Session, user_id: int) -> User:
     user = db.query(User).filter(User.id == user_id).first()
@@ -26,8 +27,15 @@ def create_user(db: Session, user: UserCreate) -> User:
             status_code=409,
             detail=f"Email {user.email} is already registered"
         )
+        
+    password_hash = hash_password(user.password) 
     
-    db_user = User(**user.model_dump())
+    user_data = user.model_dump()
+    
+    user_data["password"] = password_hash
+    
+    
+    db_user = User(**user_data)
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
