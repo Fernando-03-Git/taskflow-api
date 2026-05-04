@@ -11,10 +11,9 @@ class TaskStatus(str, Enum):
 class TaskCreate(BaseModel):
     title: str = Field(min_length=3, max_length=100)
     description: str
-    status: TaskStatus
+    status: TaskStatus = TaskStatus.PENDING
     assigned_to: int
     project_id: int
-    created_by: int
     
 class TaskResponse(BaseModel):
     

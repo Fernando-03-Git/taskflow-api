@@ -5,8 +5,7 @@ from datetime import datetime
 class CommentCreate(BaseModel):
     content: str = Field(min_length=10, max_length=200)
     task_id: int
-    user_id: int
-
+    
 class CommentResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     

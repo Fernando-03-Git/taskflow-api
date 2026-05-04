@@ -17,9 +17,10 @@ def get_project(db: Session, project_id: int) -> Project:
 def get_projects(db: Session) ->list[Project]:
     return db.query(Project).all()
 
-def create_project(db: Session, project: ProjectCreate) -> Project:
-    db_project = Project(**project.model_dump())
-    
+def create_project(db: Session, project: ProjectCreate, created_by: int) -> Project:
+    project_data = project.model_dump()
+    project_data["created_by"] = created_by
+    db_project = Project(**project_data)
     db.add(db_project)
     db.commit()
     db.refresh(db_project)

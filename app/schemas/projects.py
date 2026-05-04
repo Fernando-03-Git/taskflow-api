@@ -13,7 +13,7 @@ class ProjectCreate(BaseModel):
     name: str
     description: str = Field(min_length=10, max_length=500)
     manager_id: int
-    created_by: int
+    status: Status = Status.PENDING
     
 class ProjectResponse(BaseModel):
 

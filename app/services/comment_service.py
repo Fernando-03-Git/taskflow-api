@@ -17,8 +17,12 @@ def get_comment(db:Session, comment_id: int) -> Comment:
     
     return comment
 
-def create_comment(db: Session, comment: CommentCreate) -> Comment:
-    db_comment = Comment(**comment.model_dump())
+def create_comment(db: Session, comment: CommentCreate, user_id: int) -> Comment:
+    
+    comment_data = comment.model_dump()
+    comment_data["user_id"] = user_id
+    
+    db_comment = Comment(**comment_data)
     db.add(db_comment)
     db.commit()
     db.refresh(db_comment)

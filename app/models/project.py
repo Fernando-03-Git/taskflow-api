@@ -17,7 +17,7 @@ class Project(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(30))
     description: Mapped[str] = mapped_column(String(500))
-    status: Mapped[Status] = mapped_column(Enum(Status))
+    status: Mapped[Status] = mapped_column(Enum(Status), default=Status.PENDING)
     manager_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     created_by: Mapped[int] = mapped_column(ForeignKey("users.id"))
     created_at: Mapped[datetime] = mapped_column(

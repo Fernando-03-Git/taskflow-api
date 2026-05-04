@@ -17,8 +17,12 @@ def get_task(db: Session, task_id: int) -> Task:
     
     return task
 
-def create_task(db: Session, task: TaskCreate) -> Task:
-    db_task = Task(**task.model_dump())
+def create_task(db: Session, task: TaskCreate, created_by: int) -> Task:
+    
+    task_data = task.model_dump()
+    task_data["created_by"] = created_by
+    
+    db_task = Task(**task_data)
     
     db.add(db_task)
     db.commit()
