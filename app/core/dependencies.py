@@ -1,14 +1,15 @@
 from fastapi import Depends, HTTPException
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 from jose import JWTError
 from app.db.deps import get_db
 from app.core.security import decode_access_token
 from app.models.user import User
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth")
+oauth2_scheme = HTTPBearer()
 
-def get_current_user(token:str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> User:
+def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> User:
+    token = credentials.credentials 
     try: 
         payload = decode_access_token(token)
         user_id = payload.get("sub")
@@ -32,10 +33,3 @@ def require_role(required_role: list[str]):
     return role_checker
 
 
-"""
-
-ADMIN      → el admin puede hacer de todo, desde comentar y elimnar los comentarios o esto seria malo?
-MANAGER    → el manager solo puede administrar proyectos designar tareas cambiarles el estado a estas y comentar las tareas
-DEVELOPER  → solo puede comentar las tareas a ver como le fue
-
-"""
