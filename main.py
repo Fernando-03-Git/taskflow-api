@@ -1,13 +1,37 @@
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from app.core.config import settings
 from app.api.v1.router import api_router
+import time
 
 app = FastAPI(
     title= settings.app_name,
     description="Sistema de gestión de tareas y proyectos colaborativos",
     version= settings.app_version
 )
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"], # futuro puerto del frontend
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    start_time = time.perf_counter()
+    response = await call_next(request)
+    duration = time.perf_counter() - start_time
+    print(f"{request.method} {request.url.path} - {response.status_code} ({duration:.2f}s)")
+    
+    # Headers de seguridad
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    
+    return response
 
 # ─── Manejador 1: errores HTTP intencionales ───────────────────────────────
 @app.exception_handler(HTTPException)
