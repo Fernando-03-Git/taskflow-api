@@ -20,10 +20,10 @@ def get_comment(comment_id: int, db: Session = Depends(get_db)):
 def create_comment(comment: CommentCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     return comment_service.create_comment(db, comment, current_user.id)
 
-@router.patch("/{comment_id}", response_model= CommentResponse, dependencies= [Depends(get_current_user)])
-def update_comment(comment_id: int, data: CommentUpdate, db: Session = Depends(get_db)):
-    return comment_service.update_comment(db, comment_id, data)
+@router.patch("/{comment_id}", response_model= CommentResponse)
+def update_comment(comment_id: int, data: CommentUpdate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    return comment_service.update_comment(db, comment_id, data, current_user)
 
-@router.delete("/{comment_id}", status_code=204, dependencies= [Depends(require_role(["ADMIN"]))])
-def delete_comment(comment_id: int, db: Session = Depends(get_db)):
-    comment_service.delete_comment(db, comment_id)
+@router.delete("/{comment_id}", status_code=204)
+def delete_comment(comment_id: int, db: Session = Depends(get_db), current_user: User= Depends(get_current_user)):
+    comment_service.delete_comment(db, comment_id,current_user)
