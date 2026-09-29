@@ -2,8 +2,9 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from app.db.deps import get_db
 from app.services import user_service
-from app.schemas.users import UserCreate, UserResponse, UserUpdate
-from app.core.dependencies import require_role
+from app.schemas.users import UserCreate, UserResponse, UserUpdate, UserUpdatePassword
+from app.core.dependencies import require_role, get_current_user
+from app.models.user import User
 
 # APIRouter es como un mini-FastAPI
 # agrupa endpoints relacionados bajo un mismo recurso
@@ -32,6 +33,9 @@ def deactivate_user(user_id: int, db: Session = Depends(get_db)):
 def update_user(data: UserUpdate, user_id: int, db: Session = Depends(get_db)):
     return user_service.update_user(db, user_id, data)
 
+@router.patch("/me/password", status_code=204)
+def update_password_user( data: UserUpdatePassword, current_user: User = Depends(get_current_user), db: Session = Depends(get_db),):
+    user_service.update_password_user(db,current_user.id,data.password_current,data.password_new)
 
 
 """

@@ -2,7 +2,7 @@ from fastapi import HTTPException
 from app.models.user import User
 from app.schemas.users import UserCreate, UserUpdate
 from sqlalchemy.orm import Session
-from app.core.security import hash_password
+from app.core.security import hash_password, verify_password
 
 def get_user(db: Session, user_id: int) -> User:
     user = db.query(User).filter(User.id == user_id).first()
@@ -62,6 +62,19 @@ def update_user(db: Session, user_id: int, data: UserUpdate) -> User:
     db.refresh(user)
     return user
 
+def update_password_user(db: Session, user_id: int, current_password: str, new_password: str) -> None:
+    user = get_user(db, user_id)
+    
+    password_verify = verify_password(current_password, user.password)
+    if not password_verify:
+        raise HTTPException(
+            status_code= 401,
+            detail="La contraseña actual no es correcta"
+        )
+    hash_new_password = hash_password(new_password)
+    user.password = hash_new_password
+    db.commit()
+    
 
 def deactivate_user(db: Session, user_id: int) -> User:
     user = get_user(db, user_id)

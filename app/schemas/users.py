@@ -14,6 +14,15 @@ class UserCreate(BaseModel):
     email: EmailStr
     password: str = Field(min_length=8)
     rol: UserRol
+
+class UserUpdate(BaseModel):
+    name: Optional[str] = None
+    last_name: Optional[str] = None
+    email: Optional[EmailStr] = None
+    
+class UserUpdatePassword(BaseModel):
+    password_current: str 
+    password_new: str = Field(min_length=8)
     
 class UserResponse(BaseModel):
     
@@ -27,8 +36,3 @@ class UserResponse(BaseModel):
     is_active: bool
     created_at: datetime
 
-class UserUpdate(BaseModel):
-    name: Optional[str] = None
-    last_name: Optional[str] = None
-    email: Optional[EmailStr] = None
-    password: Optional[str] = None
