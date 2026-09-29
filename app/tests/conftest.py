@@ -61,3 +61,11 @@ def test_user(db):
     db.commit()
     db.refresh(user)
     return user
+
+@pytest.fixture
+def admin_token(client, test_user):
+    response = client.post("/api/v1/auth/", json={
+        "email": test_user.email,
+        "password": "123456789"
+    })
+    return response.json()["access_token"]

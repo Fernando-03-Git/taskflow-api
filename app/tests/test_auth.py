@@ -17,7 +17,7 @@ def test_login_success(client, test_user):
 def test_login_wrong_password(client, test_user):
     response = client.post("/api/v1/auth/", json={
         "email": test_user.email,
-        "password": "jsjsjjsjsjsjsjsjjsjs"
+        "password": "741258963369852147"
     })
     
     assert response.status_code == 401
