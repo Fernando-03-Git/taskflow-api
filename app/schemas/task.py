@@ -29,9 +29,11 @@ class TaskResponse(BaseModel):
     created_at: datetime
 
 class TaskUpdate(BaseModel):
-    
     title: Optional[str] = None
     description: Optional[str] = None
-    status: Optional[TaskStatus] = None
-    assigned_to: Optional[int] = None
 
+class TaskUpdateStatus(BaseModel):
+    status: TaskStatus
+
+class TaskUpdateAssigneeTo(BaseModel):
+    assigned_to: int

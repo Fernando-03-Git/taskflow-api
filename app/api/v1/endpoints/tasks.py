@@ -24,6 +24,6 @@ def create_task(
 ):
     return task_service.create_task(db, task, current_user.id)
 
-@router.patch("/{task_id}", response_model=TaskResponse, dependencies= [Depends(get_current_user)])
-def update_task(task_id: int, data: TaskUpdate, db: Session = Depends(get_db)):
-    return task_service.update_task(db, task_id, data)
+@router.patch("/{task_id}", response_model=TaskResponse)
+def update_task(task_id: int, data: TaskUpdate, db: Session = Depends(get_db), current_user: User =Depends(get_current_user)):
+    return task_service.update_task(db, task_id, data, current_user)
