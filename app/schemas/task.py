@@ -1,12 +1,8 @@
 from pydantic import BaseModel, Field, ConfigDict
-from enum import Enum
 from datetime import datetime
 from typing import Optional
+from app.core.enums import TaskStatus
 
-class TaskStatus(str, Enum):
-    PENDING     = "PENDING"
-    IN_PROGRESS = "IN_PROGRESS"
-    COMPLETED   = "COMPLETED"
 
 class TaskCreate(BaseModel):
     title: str = Field(min_length=3, max_length=100)
