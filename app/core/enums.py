@@ -10,3 +10,8 @@ class ProjectStatus(str, Enum):
     PENDING = "PENDING"
     IN_PROGRESS = "IN_PROGRESS"
     COMPLETED = "COMPLETED"
+    
+class Rol(str, Enum):
+    ADMIN     = "ADMIN"
+    MANAGER   = "MANAGER"
+    DEVELOPER = "DEVELOPER"

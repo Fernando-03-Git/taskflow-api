@@ -1,14 +1,10 @@
 from app.db.session import Base
 from sqlalchemy.orm import Mapped, mapped_column
-import enum
 from sqlalchemy import Enum
 from datetime import datetime
 from sqlalchemy import String, DateTime, func
+from app.core.enums import Rol
 
-class Rol(enum.Enum):
-    ADMIN     = "ADMIN"
-    MANAGER   = "MANAGER"
-    DEVELOPER = "DEVELOPER"
 
 class User(Base):
     __tablename__= "users"
