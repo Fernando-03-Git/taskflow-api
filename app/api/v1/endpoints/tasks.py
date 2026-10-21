@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from app.db.deps import get_db
-from app.schemas.task import TaskCreate,TaskResponse, TaskUpdate
+from app.schemas.task import TaskCreate,TaskResponse, TaskUpdate, TaskUpdateStatus
 from app.services import task_service
 from app.core.dependencies import require_role, get_current_user
 from app.models.user import User
@@ -27,3 +27,7 @@ def create_task(
 @router.patch("/{task_id}", response_model=TaskResponse)
 def update_task(task_id: int, data: TaskUpdate, db: Session = Depends(get_db), current_user: User =Depends(get_current_user)):
     return task_service.update_task(db, task_id, data, current_user)
+
+@router.patch("/{task_id}/status", response_model=TaskResponse)
+def update_task_status(task_id: int, data: TaskUpdateStatus, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    return task_service.update_task_status(db, task_id, data, current_user)
