@@ -2,8 +2,9 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from app.models.task import Task
 from app.models.user import User
-from app.models.project import Project
-from app.schemas.task import TaskCreate, TaskUpdate
+from app.schemas.task import TaskCreate, TaskUpdate, TaskUpdateStatus
+from app.core.enums import TaskStatus, Rol
+from app.services.project_service import get_project
 
 def get_tasks(db: Session) -> list[Task]:
     return db.query(Task).all()
@@ -34,9 +35,9 @@ def create_task(db: Session, task: TaskCreate, created_by: int) -> Task:
 def update_task(db: Session, task_id: int, data: TaskUpdate, current_user: User) -> Task:
     task = get_task(db, task_id)
     
-    project = db.query(Project).filter( Project.id == task.project_id).first()
+    project = get_project(db, task.project_id)
     
-    if task.created_by != current_user.id and current_user.rol.value != "ADMIN" and current_user.id != project.manager_id:
+    if task.created_by != current_user.id and current_user.rol != Rol.ADMIN and current_user.id != project.manager_id:
         raise HTTPException(
             status_code=403,
             detail="You are not allowed to edit this task"
