@@ -49,7 +49,7 @@ def create_task(db: Session, task: TaskCreate, current_user: User) -> Task:
 
 def update_task(db: Session, task_id: int, data: TaskUpdate, current_user: User) -> Task:
     task = get_task(db, task_id)
-    
+
     project = get_project(db, task.project_id)
     
     if task.created_by != current_user.id and current_user.rol != Rol.ADMIN and current_user.id != project.manager_id:
@@ -79,19 +79,19 @@ def update_task_status(db: Session, task_id: int, data: TaskUpdateStatus, curren
     if current_status == new_status:
         raise HTTPException(
             status_code=409,
-            detail="there is nothing to change"
+            detail="The task is already in that status"
         )
     
     if (current_status == TaskStatus.PENDING and new_status == TaskStatus.IN_PROGRESS or current_status == TaskStatus.IN_PROGRESS and new_status == TaskStatus.PENDING) and (task.assigned_to != current_user.id and project.manager_id != current_user.id and current_user.rol != Rol.ADMIN) :
         raise HTTPException(
             status_code=403,
-            detail="solo el asignado, el manager o un admin"
+            detail="Only the assigned person, the manager, or an admin"
         )
     
     if (current_status == TaskStatus.COMPLETED and new_status == TaskStatus.IN_PROGRESS or current_status == TaskStatus.IN_PROGRESS and new_status == TaskStatus.COMPLETED) and (project.manager_id != current_user.id and current_user.rol != Rol.ADMIN) :
         raise HTTPException(
             status_code=403,
-            detail="solo el manager del proyecto o un admin pueden completar"
+            detail="Only the project manager or an ADMIN can complete or reopen a task"
             )
         
     task.status = new_status
