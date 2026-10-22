@@ -47,6 +47,21 @@ USUARIOS = [
         "password": "Dev12345",
         "rol": Rol.DEVELOPER,
     },
+    {
+        "name": "Dev2",
+        "last_name": "dos",
+        "email": "dev2@example.com",
+        "password": "Dev123456",
+        "rol": Rol.DEVELOPER,
+    },
+    {
+        "name": "inactivo",
+        "last_name": "uno",
+        "email": "inactivo@example.com",
+        "password": "010023456",
+        "rol": Rol.DEVELOPER,
+        "is_active": False,
+    }
 ]
 
 
@@ -63,12 +78,13 @@ def main() -> None:
                     email=datos["email"],
                     password=hash_password(datos["password"]),
                     rol=datos["rol"],
+                    is_active=datos.get("is_active", True),
                 )
                 db.add(usuario)
                 accion = "creado"
             else:
                 usuario.password = hash_password(datos["password"])
-                usuario.is_active = True
+                usuario.is_active = datos.get("is_active", True)
                 accion = "actualizado"
 
             print(f"{accion:12} {datos['email']:24} {datos['password']}")
