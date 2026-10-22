@@ -5,6 +5,7 @@ from app.models.user import User
 from app.schemas.task import TaskCreate, TaskUpdate, TaskUpdateStatus
 from app.core.enums import TaskStatus, Rol
 from app.services.project_service import get_project
+from app.services.user_service import get_user
 
 def get_tasks(db: Session) -> list[Task]:
     return db.query(Task).all()
@@ -20,10 +21,24 @@ def get_task(db: Session, task_id: int) -> Task:
     
     return task
 
-def create_task(db: Session, task: TaskCreate, created_by: int) -> Task:
+def create_task(db: Session, task: TaskCreate, current_user: User) -> Task:
+    project = get_project(db, task.project_id)
+    assignee = get_user(db, task.assigned_to)
+    
+    if project.manager_id != current_user.id and current_user.rol != Rol.ADMIN:
+        raise HTTPException(
+            status_code=403,
+            detail="Only the project manager or an ADMIN can create tasks in this project"
+        )
+    
+    if not assignee.is_active:
+        raise HTTPException(
+            status_code=409,
+            detail=f"User with id {task.assigned_to} is deactivated and cannot be assigned tasks"
+        )
     
     task_data = task.model_dump()
-    task_data["created_by"] = created_by
+    task_data["created_by"] = current_user.id
     
     db_task = Task(**task_data)
     
