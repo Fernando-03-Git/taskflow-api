@@ -1,24 +1,51 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
+from sqlalchemy import or_, true, false
 from app.models.task import Task
 from app.models.user import User
+from app.models.project import Project
 from app.schemas.task import TaskCreate, TaskUpdate, TaskUpdateStatus
 from app.core.enums import TaskStatus, Rol
 from app.services.project_service import get_project
 from app.services.user_service import get_user
 
-def get_tasks(db: Session) -> list[Task]:
-    return db.query(Task).all()
+def _visibilidad(db: Session, current_user: User):
+    """Devuelve la condición SQL de qué tareas puede ver este usuario."""
 
-def get_task(db: Session, task_id: int) -> Task:
-    task = db.query(Task).filter(Task.id == task_id).first()
-    
+    if current_user.rol == Rol.ADMIN:
+        return true()
+
+    if current_user.rol == Rol.MANAGER:
+        proyectos_suyos = db.query(Project.id).filter(
+            Project.manager_id == current_user.id
+        )
+        return or_(
+            Task.project_id.in_(proyectos_suyos),
+            Task.assigned_to == current_user.id,
+        )
+
+    if current_user.rol == Rol.DEVELOPER:
+        return Task.assigned_to == current_user.id
+
+    return false()
+
+
+def get_tasks(db: Session, current_user: User) -> list[Task]:
+    return db.query(Task).filter(_visibilidad(db, current_user)).all()
+
+
+def get_task_visible(db: Session, task_id: int, current_user: User) -> Task:
+    task = db.query(Task).filter(
+        Task.id == task_id,
+        _visibilidad(db, current_user),
+    ).first()
+
     if not task:
         raise HTTPException(
             status_code=404,
             detail=f"Task with id {task_id} not found"
         )
-    
+
     return task
 
 def create_task(db: Session, task: TaskCreate, current_user: User) -> Task:
@@ -48,7 +75,7 @@ def create_task(db: Session, task: TaskCreate, current_user: User) -> Task:
     return db_task
 
 def update_task(db: Session, task_id: int, data: TaskUpdate, current_user: User) -> Task:
-    task = get_task(db, task_id)
+    task = get_task_visible(db, task_id, current_user)
 
     project = get_project(db, task.project_id)
     
@@ -65,7 +92,7 @@ def update_task(db: Session, task_id: int, data: TaskUpdate, current_user: User)
     return task
 
 def update_task_status(db: Session, task_id: int, data: TaskUpdateStatus, current_user: User) -> Task:
-    task = get_task(db, task_id)
+    task = get_task_visible(db, task_id, current_user)
     project = get_project(db, task.project_id)
     current_status = task.status
     new_status = data.status
