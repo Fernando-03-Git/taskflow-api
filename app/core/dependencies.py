@@ -5,6 +5,7 @@ from jose import JWTError
 from app.db.deps import get_db
 from app.core.security import decode_access_token
 from app.models.user import User
+from app.core.enums import Rol
 
 oauth2_scheme = HTTPBearer()
 
@@ -22,14 +23,13 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(oauth2_
     
     return user
 
-def require_role(required_role: list[str]):
+def require_role(required_role: list[Rol]):
     def role_checker(current_user: User = Depends(get_current_user)) -> User:
-        if current_user.rol.value not in required_role:
+        if current_user.rol not in required_role:
+            roles = ", ".join(r.value for r in required_role)
             raise HTTPException(
                 status_code=403,
-                detail=f"Access denied: requires {required_role} role"
+                detail=f"Access denied: requires {roles} role"
             )
         return current_user
     return role_checker
-
-

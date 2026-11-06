@@ -5,44 +5,35 @@ from app.services import user_service
 from app.schemas.users import UserCreate, UserResponse, UserUpdate, UserUpdatePassword
 from app.core.dependencies import require_role, get_current_user
 from app.models.user import User
+from app.core.enums import Rol
 
 # APIRouter es como un mini-FastAPI
 # agrupa endpoints relacionados bajo un mismo recurso
 router = APIRouter()
 
-@router.get("/", response_model= list[UserResponse], dependencies=[Depends(require_role("ADMIN"))])
+@router.get("/", response_model= list[UserResponse], dependencies=[Depends(require_role([Rol.ADMIN]))])
 def get_users(db: Session = Depends(get_db)):
     return user_service.get_users(db)
 
-@router.get("/{user_id}", response_model= UserResponse, dependencies=[Depends(require_role("ADMIN"))])
+@router.get("/{user_id}", response_model= UserResponse, dependencies=[Depends(require_role([Rol.ADMIN]))])
 def get_user(user_id: int, db: Session = Depends(get_db)):
     # {user_id} es un path parameter
     # FastAPI lo captura automáticamente y lo pasa a la función
     # el tipo int valida que sea un número — si mandás letras, error 422
     return user_service.get_user(db, user_id)
 
-@router.post("/", response_model= UserResponse, status_code=201, dependencies=[Depends(require_role("ADMIN"))])
+@router.post("/", response_model= UserResponse, status_code=201, dependencies=[Depends(require_role([Rol.ADMIN]))])
 def create_user(user: UserCreate, db: Session = Depends(get_db)):
     return user_service.create_user(db, user)
 
-@router.delete("/{user_id}", response_model= UserResponse, dependencies=[Depends(require_role("ADMIN"))])
+@router.delete("/{user_id}", response_model= UserResponse, dependencies=[Depends(require_role([Rol.ADMIN]))])
 def deactivate_user(user_id: int, db: Session = Depends(get_db)):
     return user_service.deactivate_user(db, user_id)
 
-@router.patch("/{user_id}", response_model= UserResponse, dependencies=[Depends(require_role("ADMIN"))])
+@router.patch("/{user_id}", response_model= UserResponse, dependencies=[Depends(require_role([Rol.ADMIN]))])
 def update_user(data: UserUpdate, user_id: int, db: Session = Depends(get_db)):
     return user_service.update_user(db, user_id, data)
 
 @router.patch("/me/password", status_code=204)
 def update_password_user( data: UserUpdatePassword, current_user: User = Depends(get_current_user), db: Session = Depends(get_db),):
     user_service.update_password_user(db,current_user.id,data.password_current,data.password_new)
-
-
-"""
-# Así se usará en los endpoints
-@router.post("/", dependencies=[Depends(require_role("ADMIN"))])
-
-# require_role("ADMIN") → retorna una función
-# Depends(...) → FastAPI ejecuta esa función
-
-"""
