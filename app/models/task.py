@@ -12,7 +12,7 @@ class Task(Base):
     __tablename__= "tasks"
     
     id: Mapped[int] = mapped_column(primary_key=True)
-    title: Mapped[str] = mapped_column(String(30))
+    title: Mapped[str] = mapped_column(String(100))
     description: Mapped[str] = mapped_column(String(500))
     status: Mapped[TaskStatus] = mapped_column(Enum(TaskStatus), default=TaskStatus.PENDING)
     project_id: Mapped[int] = mapped_column(ForeignKey("projects.id"))

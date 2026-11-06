@@ -12,7 +12,7 @@ class User(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(30))
     last_name: Mapped[str] = mapped_column(String(30))
-    email: Mapped[str] = mapped_column(String(40))
+    email: Mapped[str] = mapped_column(String(254), unique=True)
     password: Mapped[str] = mapped_column(String(60))
     rol: Mapped[Rol] = mapped_column(Enum(Rol))
     is_active: Mapped[bool] = mapped_column(default=True)
