@@ -2,6 +2,7 @@ from fastapi import HTTPException
 from app.models.user import User
 from app.schemas.users import UserCreate, UserUpdate
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 from app.core.security import hash_password, verify_password
 
 def get_user(db: Session, user_id: int) -> User:
@@ -37,7 +38,14 @@ def create_user(db: Session, user: UserCreate) -> User:
     
     db_user = User(**user_data)
     db.add(db_user)
-    db.commit()
+    
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=409,
+            detail=f"Email {user.email} is already registered")
     db.refresh(db_user)
     return db_user
 
@@ -58,7 +66,13 @@ def update_user(db: Session, user_id: int, data: UserUpdate) -> User:
     
     for key, value in data.model_dump(exclude_unset= True).items():
         setattr(user, key, value)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=409,
+            detail=f"Email {data.email} is already registered")
     db.refresh(user)
     return user
 
