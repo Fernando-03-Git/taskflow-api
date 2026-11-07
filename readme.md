@@ -50,7 +50,7 @@ otro aunque esté autenticado y tenga rol.
 |---|---|
 | `ADMIN` | Todo: gestionar usuarios, proyectos, cualquier tarea o comentario |
 | `MANAGER` | Crear y editar proyectos y tareas |
-| `DEVELOPER` | Ver, comentar, y editar lo propio |
+| `DEVELOPER` | Ver las tareas que tiene asignadas, comentar, y editar lo propio |
 
 ### Decisiones de diseño
 
@@ -63,12 +63,22 @@ otro aunque esté autenticado y tenga rol.
   porque las reglas son distintas: pide la contraseña actual y no devuelve cuerpo.
 - **Ningún esquema de respuesta expone el hash de la contraseña.** La columna es
   `String(60)` porque un hash de bcrypt mide exactamente 60 caracteres.
+- **`409` antes que `403`.** Al cambiar el estado de una tarea se comprueba primero si
+  la transición existe para alguien, y después si existe para ti. Al revés el mensaje
+  mentiría: diría "no tienes permiso" cuando la verdad es "eso no se puede hacer".
+- **Si no puedes ver una tarea, recibes `404`, no `403`.** Un `403` confirmaría que
+  existe, y probando ids se reconstruiría la tabla.
+- **`created_by` es historia; `project.manager_id` es autoridad.** Quién escribió una
+  fila es un dato del pasado; los permisos se deciden con quién manda hoy.
+- **El correo es identidad, no texto libre.** Se normaliza a minúsculas al entrar y la
+  tabla tiene una restricción de unicidad, porque validarlo solo en el servicio deja
+  una ventana de carrera entre la consulta y el `INSERT`.
 
 ---
 
 ## Endpoints
 
-Todos bajo el prefijo **`/api/v1`**. Son 20.
+Todos bajo el prefijo **`/api/v1`**. Son 21.
 
 ### Auth
 
@@ -100,10 +110,21 @@ Todos bajo el prefijo **`/api/v1`**. Son 20.
 
 | Método | Ruta | Qué hace | Requiere |
 |---|---|---|---|
-| `GET` | `/tasks/` | Listar tareas | Autenticado |
-| `GET` | `/tasks/{task_id}` | Obtener una tarea | Autenticado |
-| `POST` | `/tasks/` | Crear tarea | ADMIN, MANAGER |
+| `GET` | `/tasks/` | Listar tareas, **filtradas según quién pregunta** | Autenticado |
+| `GET` | `/tasks/{task_id}` | Obtener una tarea, si es visible para quien pregunta | Autenticado |
+| `POST` | `/tasks/` | Crear tarea | Manager del proyecto o ADMIN |
 | `PATCH` | `/tasks/{task_id}` | Editar título y descripción | Creador, manager del proyecto o ADMIN |
+| `PATCH` | `/tasks/{task_id}/status` | Cambiar el estado | Depende de la transición |
+
+**Qué ve cada quien en `GET /tasks/`:** un ADMIN, todas. Un MANAGER, las de los
+proyectos que gestiona más las que tenga asignadas. Un DEVELOPER, solo las asignadas
+a él. El filtro se aplica en la consulta, no después de traer las filas.
+
+**Las transiciones de estado** son una máquina de estados, no un campo de texto. De
+las nueve combinaciones posibles, dos son imposibles para cualquiera (`409`), tres son
+el mismo estado (`409`) y las cuatro restantes dependen de quién pregunta: mover entre
+`PENDING` e `IN_PROGRESS` lo puede hacer el asignado, el manager del proyecto o un
+ADMIN; completar o reabrir, solo el manager o un ADMIN.
 
 ### Comentarios
 
@@ -194,8 +215,9 @@ uvicorn main:app --reload
 python -m scripts.seed
 ```
 
-Crea cuatro usuarios de desarrollo (un ADMIN, dos MANAGER y un DEVELOPER). Es
-idempotente: se puede correr las veces que haga falta.
+Crea seis usuarios de desarrollo: un ADMIN, dos MANAGER, dos DEVELOPER y uno
+desactivado para probar ese caso. Es idempotente: se puede correr las veces que haga
+falta y el resultado siempre es el mismo.
 
 ---
 
@@ -222,30 +244,29 @@ tareas y comentarios.
 
 ## Estado y límites conocidos
 
-Esto no es un producto terminado: es un proyecto de aprendizaje y prefiero decir qué
+Esto no es un producto terminado: es un proyecto de aprendizaje, y prefiero decir qué
 falta antes de que alguien lo descubra leyendo el código.
 
 **Hecho**
 
 - Autenticación con JWT y hash con bcrypt
-- Roles aplicados endpoint por endpoint
+- Roles aplicados endpoint por endpoint, con una fábrica de dependencias
 - Autorización por propiedad en comentarios y en la edición de tareas
-- Manejadores globales de excepciones, headers de seguridad, logging
+- Máquina de estados de las tareas: las nueve transiciones cubiertas, cada una con
+  quién puede hacerla
+- Visibilidad de tareas filtrada en la consulta según el rol de quien pregunta
+- El correo como identidad: único en la base, normalizado a minúsculas
+- Manejadores globales de excepciones, headers de seguridad, logging por petición
 - Migraciones con Alembic
-- Pruebas de auth y usuarios
+- Pruebas de autenticación y usuarios
 
-**Pendiente, y por qué importa**
+**Pendiente**
 
-| Pendiente | Qué implica |
-|---|---|
-| **Paginación** | `GET /tasks/` y `GET /users/` devuelven todo. Con muchos registros, la respuesta pesa demasiado |
-| **Visibilidad por proyecto** | Hoy cualquier usuario autenticado ve todas las tareas. Debería ver solo las de sus proyectos |
-| **Validación de transiciones de estado** | El `status` de una tarea no tiene máquina de estados: falta definir qué cambios son válidos y quién los puede hacer |
-| **Unicidad del email en la base de datos** | Se valida en el servicio, pero sin restricción en la tabla hay una ventana de carrera |
-| **Revocación de sesiones** | Un token emitido antes de un cambio de contraseña sigue siendo válido hasta que vence |
-| **Capa de repositorio** | Los servicios consultan el ORM directamente, y lanzan `HTTPException`, así que están acoplados a HTTP |
-| **Async** | Todo es sincrónico. Con SQLAlchemy síncrono es la decisión correcta, pero limita la concurrencia |
-| **Despliegue** | Solo corre en local |
+Hay diez huecos conocidos —de seguridad, de modelo de datos y de consistencia de la
+API— y varios pendientes de alcance como la paginación, el async y el despliegue.
+Cada uno está documentado con qué pasa, qué implica y qué haría falta:
+
+→ **[BACKLOG.md](BACKLOG.md)**
 
 **No hay registro público de usuarios a propósito.** Los crea un ADMIN. Es una
 herramienta interna, no un SaaS.
