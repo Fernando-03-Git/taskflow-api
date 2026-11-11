@@ -158,7 +158,44 @@ ADMIN; completar o reabrir, solo el manager o un ADMIN.
 
 ---
 
-## Instalación
+## Levantarlo con Docker
+
+La forma rápida. Lo único que necesitas instalado es Docker.
+
+```bash
+git clone https://github.com/Fernando-03-Git/taskflow-api.git
+cd taskflow-api
+copy .env.example .env      # Windows.  En Linux o macOS: cp .env.example .env
+docker compose up
+```
+
+Y ya está: **http://localhost:8000/docs**
+
+Eso levanta dos contenedores —la API y un PostgreSQL 16— conectados en una red
+privada. Las migraciones se aplican solas al arrancar, así que la base queda con
+sus tablas sin que tengas que hacer nada.
+
+Para cargar los usuarios de prueba, en otra terminal:
+
+```bash
+docker compose exec app python -m scripts.seed
+```
+
+Tres cosas que conviene saber:
+
+- **Los datos sobreviven.** Viven en un volumen, no dentro del contenedor, así que
+  `docker compose down` no los borra. Solo lo hace `docker compose down -v`.
+- **PostgreSQL se publica en el 5433**, no en el 5432, para no chocar con uno que
+  ya tengas instalado. Si quieres conectarte con psql o DBeaver, ese es el puerto.
+- **El `.env` nunca entra a la imagen.** Lo excluye el `.dockerignore`, y la
+  configuración se inyecta al arrancar el contenedor. La misma imagen sirve para
+  desarrollo y para producción; lo único que cambia son las variables.
+
+---
+
+## Instalación manual
+
+Si prefieres correrlo sin contenedores, contra tu propio PostgreSQL.
 
 ### 1. Clonar
 
