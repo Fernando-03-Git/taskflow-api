@@ -1,6 +1,7 @@
 # Variables de entorno — NUNCA a GitHub
 .env
 .env.*
+!.env.example
 
 # Entorno virtual
 venv/

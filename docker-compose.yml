@@ -1,0 +1,51 @@
+services:
+
+  # Base de datos. No se construye: se usa la imagen oficial.
+  db:
+    image: postgres:16
+    environment:
+      # Estas tres las lee la imagen de postgres al arrancar por primera vez
+      # y con ellas crea el usuario, la clave y la base.
+      POSTGRES_USER: taskflow
+      POSTGRES_PASSWORD: taskflow
+      POSTGRES_DB: taskflow
+    volumes:
+      # Sin esta linea, borrar el contenedor borra la base entera:
+      # lo que se escribe dentro de un contenedor muere con el.
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      # 5433 afuera porque el 5432 de Windows ya lo ocupa el PostgreSQL local.
+      # Solo sirve para conectarse desde fuera (psql, DBeaver); entre
+      # contenedores se habla por el 5432 interno.
+      - "5433:5432"
+    healthcheck:
+      # pg_isready devuelve 0 cuando postgres acepta conexiones.
+      # Sin esto, "arrancado" y "listo" se confunden y la app pierde la carrera.
+      test: ["CMD-SHELL", "pg_isready -U taskflow"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # La API. Esta si se construye, desde el Dockerfile de la raiz.
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file:
+      # Trae APP_NAME, SECRET_KEY y las demas desde el .env local.
+      # El archivo nunca entra a la imagen: lo excluye el .dockerignore.
+      - .env
+    environment:
+      # Pisa la DATABASE_URL del .env, que apunta a localhost.
+      # Dentro del contenedor, localhost es el contenedor mismo;
+      # el host correcto es "db", el nombre del servicio de arriba.
+      DATABASE_URL: postgresql://taskflow:taskflow@db:5432/taskflow
+    depends_on:
+      db:
+        # No basta con que el contenedor de db arranque: tiene que estar listo.
+        condition: service_healthy
+
+# Declaracion del volumen. Va al final, sin sangria, al mismo nivel que services.
+# Sobrevive a "docker compose down". Solo "down -v" lo borra.
+volumes:
+  postgres_data:

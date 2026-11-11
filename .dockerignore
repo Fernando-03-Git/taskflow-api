@@ -1,0 +1,23 @@
+# Secretos — lo único realmente grave
+.env
+
+# Entorno virtual: enorme, y compilado para Windows
+venv/
+
+# Historial de git
+.git/
+.gitattributes
+.gitignore
+
+# Basura de Python, en cualquier nivel
+**/__pycache__
+**/*.pyc
+.pytest_cache/
+
+# Documentación: no hace daño, pero no corre nada
+readme.md
+BACKLOG.md
+
+# El Dockerfile no se necesita dentro de la imagen que él mismo construye
+Dockerfile
+.dockerignore
